@@ -196,41 +196,64 @@
   const prizeEl = document.getElementById("prize");
   const claimEl = document.getElementById("claim");
 
+  const params = new URLSearchParams(window.location.search);
+  const partner = params.get("partner") || "unknown";
+
   function jsonp(url, cb){
-    const name = "cb_" + Date.now();
-    window[name] = data => {
-      cb(null, data);
+    const name = "cb_" + Date.now() + "_" + Math.floor(Math.random()*1000);
+
+    const script = document.createElement("script");
+
+    window[name] = (data) => {
+      try { cb(null, data); }
+      finally {
+        delete window[name];
+        script.remove();
+      }
+    };
+
+    script.src = url + "&callback=" + name;
+
+    script.onerror = () => {
       delete window[name];
       script.remove();
+      cb(new Error("Network error"));
     };
-    const script = document.createElement("script");
-    script.src = url + "&callback=" + name;
-    script.onerror = () => cb(new Error("error"));
+
     document.body.appendChild(script);
   }
 
   btn.onclick = () => {
     btn.disabled = true;
+    btn.textContent = "Крутим...";
     spinner.style.display = "block";
     err.style.display = "none";
     res.style.display = "none";
 
-    jsonp(API_URL, (e, data) => {
+    const url = API_URL + "?partner=" + encodeURIComponent(partner);
+
+    jsonp(url, (e, data) => {
       spinner.style.display = "none";
 
-      if (e || !data || !data.ok) {
+      if (e || !data) {
         err.style.display = "block";
         err.textContent = "Ошибка соединения. Попробуйте ещё раз.";
         btn.disabled = false;
+        btn.textContent = "Крутить";
         return;
       }
 
-      prizeEl.textContent = data.prize;
-      claimEl.textContent = "ID: " + data.claim_id;
+      if (!data.ok) {
+        err.style.display = "block";
+        err.textContent = (data.error || "Подарки закончились 🙏");
+        btn.textContent = "Готово";
+        return;
+      }
+
+      prizeEl.textContent = data.prize || "Подарок";
+      claimEl.textContent = "ID: " + (data.claim_id || "-");
       res.style.display = "block";
       btn.textContent = "Готово";
     });
   };
 </script>
-</body>
-</html>
