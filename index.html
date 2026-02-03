@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Подарок — Tapioca x Koko</title>
+
+  <style>
+    :root{
+      --bg1:#0b0f1a;
+      --bg2:#101a2f;
+      --card:#0f172a;
+      --line:rgba(255,255,255,.10);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.62);
+      --accent:#22c55e;
+      --accent2:#60a5fa;
+      --danger:#fb7185;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(96,165,250,.25), transparent 60%),
+        radial-gradient(900px 600px at 80% 30%, rgba(34,197,94,.20), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      padding:24px;
+    }
+
+    .card{
+      width:min(560px,100%);
+      background: rgba(15,23,42,.85);
+      border:1px solid var(--line);
+      border-radius:22px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .top{
+      display:flex;
+      gap:14px;
+      align-items:center;
+      padding:22px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .logo{
+      width:46px;height:46px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, rgba(96,165,250,.25), rgba(34,197,94,.25));
+      border:1px solid var(--line);
+      font-size:22px;
+    }
+
+    h1{
+      margin:0;
+      font-size:20px;
+    }
+    .sub{
+      margin-top:4px;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .body{
+      padding:22px;
+    }
+
+    .hint{
+      margin:0 0 16px 0;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.4;
+    }
+
+    .btn{
+      width:100%;
+      border:0;
+      border-radius:16px;
+      padding:14px 16px;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+      color:#06121f;
+      background:linear-gradient(135deg,var(--accent2),var(--accent));
+    }
+
+    .btn[disabled]{
+      opacity:.6;
+      cursor:not-allowed;
+    }
+
+    .spinner{
+      display:none;
+      margin:16px auto;
+      width:48px;height:48px;
+      border-radius:50%;
+      border:4px solid rgba(255,255,255,.2);
+      border-top-color:#60a5fa;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .error{
+      display:none;
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      background:rgba(251,113,133,.12);
+      border:1px solid rgba(251,113,133,.35);
+    }
+
+    .result{
+      display:none;
+      margin-top:16px;
+      padding:14px;
+      border-radius:16px;
+      background:rgba(2,6,23,.55);
+      border:1px solid var(--line);
+    }
+
+    .prize{
+      font-size:18px;
+      font-weight:800;
+      margin-top:6px;
+    }
+
+    .id{
+      margin-top:10px;
+      font-family:monospace;
+      background:rgba(255,255,255,.06);
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+    }
+
+    .foot{
+      padding:16px 22px;
+      border-top:1px solid var(--line);
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="top">
+      <div class="logo">🎁</div>
+      <div>
+        <h1>Крутите барабан</h1>
+        <div class="sub">Сканируйте QR → нажмите кнопку → получите подарок</div>
+      </div>
+    </div>
+
+    <div class="body">
+      <p class="hint">
+        После получения подарка сделайте скрин и покажите сотруднику.
+      </p>
+
+      <button id="spinBtn" class="btn">Крутить</button>
+      <div id="spinner" class="spinner"></div>
+
+      <div id="err" class="error"></div>
+
+      <div id="res" class="result">
+        <div>🎉 Ваш подарок:</div>
+        <div id="prize" class="prize"></div>
+        <div id="claim" class="id"></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <b>Важно:</b> один клиент — один подарок (ограничение по браузеру).
+    </div>
+  </div>
+
+<script>
+  // 🔗 ТВОЙ РАБОЧИЙ GOOGLE SCRIPT (JSONP)
+  const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLj8vMfjz1pqLWLBGuBsB7aoNDJ-GgD7PClEesu5zlAPirNgYTtGlqVumhfC9rDKBqVsxphYdnlnSyZarcN73BYQGsgryYwiXRoJ67EBuKOsJ-JvdXolT8pAlQAMaXyJRJjo6SBcxHTivwfGkS-7Y1eriRjZgdZ4P7K_1cf9-GhA0Iaq4VG0ncym-Cm7z77KWxM-dB7n_psF7JQJpL5fjIlzSn5IMY7xQ3h5nxusB31ekG9nm9dMSqmQv_dQuTnTPx-2rTMiMI0hhjVvQGF4NtVdNjF1iA&lib=MYRWITlCx1e_aWyMp6H-bLeIbjzq77u4Z";
+
+  const btn = document.getElementById("spinBtn");
+  const spinner = document.getElementById("spinner");
+  const err = document.getElementById("err");
+  const res = document.getElementById("res");
+  const prizeEl = document.getElementById("prize");
+  const claimEl = document.getElementById("claim");
+
+  function jsonp(url, cb){
+    const name = "cb_" + Date.now();
+    window[name] = data => {
+      cb(null, data);
+      delete window[name];
+      script.remove();
+    };
+    const script = document.createElement("script");
+    script.src = url + "&callback=" + name;
+    script.onerror = () => cb(new Error("error"));
+    document.body.appendChild(script);
+  }
+
+  btn.onclick = () => {
+    btn.disabled = true;
+    spinner.style.display = "block";
+    err.style.display = "none";
+    res.style.display = "none";
+
+    jsonp(API_URL, (e, data) => {
+      spinner.style.display = "none";
+
+      if (e || !data || !data.ok) {
+        err.style.display = "block";
+        err.textContent = "Ошибка соединения. Попробуйте ещё раз.";
+        btn.disabled = false;
+        return;
+      }
+
+      prizeEl.textContent = data.prize;
+      claimEl.textContent = "ID: " + data.claim_id;
+      res.style.display = "block";
+      btn.textContent = "Готово";
+    });
+  };
+</script>
+</body>
+</html>
