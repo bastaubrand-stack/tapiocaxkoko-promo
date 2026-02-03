@@ -187,7 +187,7 @@
   </div>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbxgYz4Y6zDQjL9LVhj3qDwlwO8pp3WkQ-2i_vswn8kYP661FnwDA6bW7ustr7D_cYLq8w/exec";
+  const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLipoaWjzUoY0z942gTXv0dc-wavx4xqJymdZGEOfVmMQ6k-27oRdUranSKyK8f5WwLePwL_X-iq-qLk3m-4RRWzrTqP5qZemU_D575nwqEU736TbxbZhqYOJswcin5Ui8HLVWRSqiHVwa0AOiQUjlDjQ787P7D12Zkcpf4Q5VVPerG0RLhJPThdIPQweRQRlGB49Ma_9LJEnHWK1u9eaujSuHPnD6-RkfVeZkWITxxHVUObksiTPR_diOqCUQ6Egnp1jJmKZS0DMIDBjRDUS6uzzGiY1dagx5AsHpgWxKcuvcQm8RmIY2B2gbKB8OBoWQB0p4IQ&lib=MicgIyQaEXz4C3CsEqV55IX1zAWwzpnhS";
 
   const btn = document.getElementById("spinBtn");
   const spinner = document.getElementById("spinner");
@@ -212,7 +212,7 @@
       }
     };
 
-    script.src = url + "&callback=" + name;
+ script.src = url + "&callback=" + name + "&_ts=" + Date.now();
 
     script.onerror = () => {
       delete window[name];
@@ -230,7 +230,7 @@
     err.style.display = "none";
     res.style.display = "none";
 
-    const url = API_URL + "?partner=" + encodeURIComponent(partner);
+    const url = API_URL + "&partner=" + encodeURIComponent(partner);
 
     jsonp(url, (e, data) => {
       spinner.style.display = "none";
@@ -257,3 +257,5 @@
     });
   };
 </script>
+</body>
+</html>
