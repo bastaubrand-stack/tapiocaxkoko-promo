@@ -212,7 +212,7 @@
       }
     };
 
- script.src = url + "&callback=" + name + "&_ts=" + Date.now();
+ script.src = url + (url.includes("?") ? "&" : "?") + "callback=" + name;
 
     script.onerror = () => {
       delete window[name];
@@ -224,15 +224,32 @@
   }
 
   btn.onclick = () => {
+    let finished = false;
+
+const timer = setTimeout(() => {
+  if (finished) return;
+
+  finished = true;
+  spinner.style.display = "none";
+  err.style.display = "block";
+  err.textContent = "Сервис временно недоступен. Попробуйте ещё раз.";
+  btn.disabled = false;
+  btn.textContent = "Крутить";
+}, 10000); 
+
     btn.disabled = true;
     btn.textContent = "Крутим...";
     spinner.style.display = "block";
     err.style.display = "none";
     res.style.display = "none";
 
-    const url = API_URL + "&partner=" + encodeURIComponent(partner);
+   const url = API_URL + (API_URL.includes("?") ? "&" : "?") + "partner=" + encodeURIComponent(partner);
 
     jsonp(url, (e, data) => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timer);
+
       spinner.style.display = "none";
 
       if (e || !data) {
